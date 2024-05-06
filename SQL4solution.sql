@@ -60,3 +60,7 @@ SELECT player_id, device_id FROM CTE WHERE rnk = 1;
 #Using FIRST_VALUE()
 SELECT DISTINCT player_id, FIRST_VALUE(device_id) OVER(PARTITION BY player_id ORDER BY event_date) AS 'device_id'
 FROM Activity;
+
+#Using LAST_VALUE()
+SELECT DISTINCT player_id, LAST_VALUE(device_id) OVER(PARTITION BY player_id ORDER BY event_date DESC RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS 'device_id'
+FROM Activity;

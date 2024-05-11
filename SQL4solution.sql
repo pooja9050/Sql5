@@ -64,3 +64,28 @@ FROM Activity;
 #Using LAST_VALUE()
 SELECT DISTINCT player_id, LAST_VALUE(device_id) OVER(PARTITION BY player_id ORDER BY event_date DESC RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS 'device_id'
 FROM Activity;
+
+#1225. Report Contiguous Dates
+# Write your MySQL query statement below
+With CTE AS (SELECT fail_date AS 'dat','failed' AS period_state, rank() OVER(ORDER BY fail_date) AS 'rnk' FROM Failed
+WHERE YEAR(fail_date) = 2019
+UNION ALL
+SELECT success_date AS 'dat', 'succeeded' AS period_state, rank() OVER(ORDER BY success_date) AS 'rnk' FROM Succeeded
+WHERE YEAR(success_date) = 2019)
+
+SELECT period_state, MIN(dat) AS 'start_date', MAX(dat) AS 'end_date' FROM (SELECT *,
+(rank() OVER(ORDER BY dat )- rnk) AS 'group_rnk' FROM CTE) AS y 
+GROUP BY group_rnk, period_state 
+ORDER BY start_date;
+
+#Alternative
+With CTE AS (SELECT fail_date AS 'dat','failed' AS period_state, rank() OVER(ORDER BY fail_date) AS 'rnk' FROM Failed
+WHERE YEAR(fail_date) = 2019
+UNION ALL
+SELECT success_date AS 'dat', 'succeeded' AS period_state, rank() OVER(ORDER BY success_date) AS 'rnk' FROM Succeeded
+WHERE YEAR(success_date) = 2019)
+
+SELECT period_state, MIN(dat) AS 'start_date', MAX(dat) AS 'end_date' FROM (SELECT *,
+(rank() OVER(ORDER BY dat )- rnk) AS 'group_rnk' FROM CTE) AS y 
+GROUP BY group_rnk, period_state 
+ORDER BY 2;

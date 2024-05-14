@@ -89,3 +89,34 @@ SELECT period_state, MIN(dat) AS 'start_date', MAX(dat) AS 'end_date' FROM (SELE
 (rank() OVER(ORDER BY dat )- rnk) AS 'group_rnk' FROM CTE) AS y 
 GROUP BY group_rnk, period_state 
 ORDER BY 2;
+
+
+#618. Students Report By Geography
+SELECT 
+    MAX(CASE WHEN continent = 'America' THEN name ELSE NULL END) AS America,
+    MAX(CASE WHEN continent = 'Asia' THEN name ELSE NULL END) AS Asia,
+    MAX(CASE WHEN continent = 'Europe' THEN name ELSE NULL END) AS Europe
+FROM (
+    SELECT
+        name,
+        continent,
+        ROW_NUMBER() OVER (PARTITION BY continent ORDER BY name) as 'rnk'
+    FROM Student
+    WHERE continent IN ('America', 'Asia', 'Europe')
+) AS RankedStudents
+GROUP BY rnk;
+
+#Alternative # Write your MySQL query statement below
+SELECT America, Asia, Europe
+FROM(
+    SELECT ROW_NUMBER() OVER(ORDER BY name) euid, name as Europe FROM Student
+    WHERE continent = 'Europe') eu
+    RIGHT JOIN
+    (SELECT ROW_NUMBER() OVER(ORDER BY name) amid, name as America FROM Student
+    WHERE continent = 'America') am
+    ON euid = amid
+    LEFT JOIN
+    (SELECT ROW_NUMBER() OVER(ORDER BY name) asid, name as Asia FROM Student
+    WHERE continent = 'Asia') asia
+    ON asid = amid
+

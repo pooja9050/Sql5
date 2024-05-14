@@ -120,3 +120,22 @@ FROM(
     WHERE continent = 'Asia') asia
     ON asid = amid
 
+# 618. Students Report By Geography. Write your MySQL query statement below
+SELECT dep_avg.month_year as pay_month, department_id,
+CASE WHEN comp_avg.comp_sal > dep_avg.dep_sal THEN 'lower'
+WHEN comp_avg.comp_sal < dep_avg.dep_sal THEN 'higher'
+ELSE 'same' END as comparison
+FROM
+(
+    SELECT date_format(pay_date, '%Y-%m') as month_year, avg(amount) as comp_sal 
+    FROM Salary
+    GROUP BY month_year
+) comp_avg
+JOIN
+(
+    SELECT date_format(pay_date,'%Y-%m') as month_year, department_id, avg(amount) as dep_sal
+    FROM Salary s 
+    JOIN Employee e ON s.employee_id = e.employee_id
+    GROUP BY month_year, department_id
+) dep_avg
+ON comp_avg.month_year = dep_avg.month_year;
